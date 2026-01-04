@@ -2,14 +2,14 @@
 
 **Beep Boop You CAD** - Robots play "picture sentence picture" / "paper telephone" / "eat poop you cat"!
 
-A collaborative game where Claude (Anthropic AI) and Nano Banana (image generation AI) play a version of the classic game "Eat Poop You Cat" by alternating between text descriptions and images.
+A collaborative game where Claude (Anthropic AI) and Gemini (Google AI) play a version of the classic game "Eat Poop You Cat" by alternating between text descriptions and images.
 
 ## How It Works
 
-1. **Claude** generates an initial creative sentence
-2. **Nano Banana** draws an image based on that sentence
+1. **You** provide an initial sentence
+2. **Gemini** draws an image based on that sentence
 3. **Claude** describes what it sees in the image
-4. **Nano Banana** draws the new description
+4. **Gemini** draws the new description
 5. Continue alternating...
 
 Watch as the message transforms through each AI's interpretation!
@@ -23,13 +23,7 @@ This project uses [uv](https://github.com/astral-sh/uv) for fast Python package 
 - Python 3.12 or higher
 - uv package manager
 - Anthropic API key (for Claude)
-- Banana.dev API key (for Nano Banana image generation)
-
-### Install uv (if not already installed)
-
-```bash
-pip install uv
-```
+- Google API key (for Gemini image generation)
 
 ### Setup
 
@@ -52,78 +46,78 @@ cp .env.example .env
 
 Get your API keys:
 - **Anthropic API**: https://console.anthropic.com/
-- **Banana.dev API**: https://www.banana.dev/
+- **Google API**: https://aistudio.google.com/apikey
 
 ## Usage
 
-Run the game with default settings (5 rounds):
+Start a new game with your sentence:
 
 ```bash
-uv run beepboopyoucad
+uv run beepboopyoucad "A robot dancing in the rain"
 ```
 
-Or specify the number of rounds:
+Continue the game (each invocation plays one round):
 
 ```bash
-uv run beepboopyoucad --rounds 7
+uv run beepboopyoucad --continue output/game_20260104_120000.json
 ```
 
-Specify a custom output directory:
+### Options
+
+```
+--style STYLE       Art style for images (default: "a very hasty and sloppy pencil sketch")
+--describe PROMPT   Prompt for Claude when describing images
+--output DIR        Output directory (default: output)
+--continue FILE     Continue a game from a JSON file
+```
+
+### Examples
 
 ```bash
-uv run beepboopyoucad --rounds 5 --output my_game_results
+# Start with custom style
+uv run beepboopyoucad "A cat wearing a top hat" --style "watercolor painting"
+
+# Custom describe prompt
+uv run beepboopyoucad "A mysterious door" --describe "What story does this image tell?"
 ```
-
-### Try the Demo
-
-To see how the game works without API keys, run the demo:
-
-```bash
-uv run python demo.py
-```
-
-This will create a simulated game showing the flow from text to image and back.
 
 ## Output
 
 The game creates:
 - Images for each drawing round (`.png` files)
 - A JSON file with the complete game history
+- An HTML file showing the full conversation with embedded images
 - Console output showing the progression
 
 All outputs are saved in the `output/` directory (or your specified directory).
 
-## Example
+## Example Session
 
 ```
-🎮 Starting 'Beep Boop You CAD' game!
+$ uv run beepboopyoucad "A purple elephant wearing sunglasses"
+💾 Game saved: output/game_20260104_120000.json
+🎮 Started new game: 20260104_120000
+
+🎮 Round 2
 ============================================================
+Nano Banana draws the sentence...
+🎨 Image saved: output/round_2_20260104_120000.png
+💾 Game saved: output/game_20260104_120000.json
+🌐 HTML saved: output/game_20260104_120000.html
 
-[Round 1] Claude generates initial sentence...
-📝 Sentence: A purple elephant wearing sunglasses rides a skateboard through a busy city street.
+📊 Game Summary:
+🎨 Style: a very hasty and sloppy pencil sketch
+------------------------------------------------------------
 
-[Round 2] Nano Banana draws the sentence...
-🎨 Image saved: output/round_2_20240104_120000.png
+Round 1 (Text):
+  A purple elephant wearing sunglasses
 
-[Round 3] Claude describes the image...
-📝 Description: A large gray mammal balancing on a wheeled board amid tall buildings.
+Round 2 (Image):
+  output/round_2_20260104_120000.png
 
-[Round 4] Nano Banana draws the sentence...
-🎨 Image saved: output/round_4_20240104_120030.png
+------------------------------------------------------------
 
-[Round 5] Claude describes the image...
-📝 Description: An abstract creature navigating an urban landscape.
-
-============================================================
-🎉 Game complete!
-```
-
-## Development
-
-Run with Python directly:
-
-```bash
-uv run python -m beepboopyoucad.main --rounds 5
+▶️  Continue: uv run beepboopyoucad --continue output/game_20260104_120000.json
 ```
 
 ## License
@@ -133,4 +127,3 @@ MIT
 ## Credits
 
 Inspired by the classic party game "Eat Poop You Cat" / "Paper Telephone" / "Picture Sentence Picture"
-
