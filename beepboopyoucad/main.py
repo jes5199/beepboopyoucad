@@ -24,7 +24,7 @@ Example:
   
 Environment Variables:
   ANTHROPIC_API_KEY - Required: Your Anthropic API key for Claude
-  BANANA_API_KEY    - Required: Your Banana.dev API key for Nano Banana
+  GOOGLE_API_KEY    - Required: Your Google API key for Gemini
         """
     )
     
@@ -50,8 +50,8 @@ Environment Variables:
         print("   Please set it in your .env file or environment")
         return 1
     
-    if not os.getenv("BANANA_API_KEY"):
-        print("⚠️  Warning: BANANA_API_KEY environment variable not set")
+    if not os.getenv("GOOGLE_API_KEY"):
+        print("⚠️  Warning: GOOGLE_API_KEY environment variable not set")
         print("   Image generation will use placeholder images")
     
     try:
