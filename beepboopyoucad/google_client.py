@@ -23,21 +23,28 @@ class NanoBananaClient:
 
         self.client = genai.Client(api_key=self.api_key)
 
-    def generate_image(self, prompt: str, output_path: str) -> str:
+    def generate_image(self, prompt: str, output_path: str, style: str | None = None) -> str:
         """
         Generate an image from a text prompt
 
         Args:
             prompt: Text description to generate image from
             output_path: Path where to save the generated image
+            style: Optional art style for the image
 
         Returns:
             Path to the saved image
         """
+        # Format prompt with XML tags
+        if style:
+            formatted_prompt = f"<style>{style}</style><prompt>{prompt}</prompt>"
+        else:
+            formatted_prompt = f"<prompt>{prompt}</prompt>"
+
         try:
             response = self.client.models.generate_content(
                 model="gemini-2.5-flash-image",
-                contents=[prompt],
+                contents=[formatted_prompt],
             )
 
             for part in response.parts:

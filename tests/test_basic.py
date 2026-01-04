@@ -10,7 +10,7 @@ def test_package_imports():
     """Test that all modules can be imported"""
     import beepboopyoucad
     from beepboopyoucad import claude_client
-    from beepboopyoucad import banana_client
+    from beepboopyoucad import google_client
     from beepboopyoucad import game
     from beepboopyoucad import main
     
@@ -21,7 +21,7 @@ def test_package_imports():
 def test_client_initialization_without_keys():
     """Test that clients raise appropriate errors when API keys are missing"""
     from beepboopyoucad.claude_client import ClaudeClient
-    from beepboopyoucad.banana_client import NanoBananaClient
+    from beepboopyoucad.google_client import NanoBananaClient
     
     # Save original env vars
     orig_anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
@@ -94,7 +94,7 @@ def test_game_initialization():
 
 def test_placeholder_image_generation():
     """Test that placeholder image generation works"""
-    from beepboopyoucad.banana_client import NanoBananaClient
+    from beepboopyoucad.google_client import NanoBananaClient
     import tempfile
 
     os.environ["GOOGLE_API_KEY"] = "test_key"

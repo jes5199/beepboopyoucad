@@ -7,7 +7,7 @@ from typing import List, Dict
 import json
 
 from .claude_client import ClaudeClient
-from .banana_client import NanoBananaClient
+from .google_client import NanoBananaClient
 
 
 class GameRound:
@@ -40,13 +40,14 @@ class GameRound:
 class Game:
     """Main game controller for Picture Sentence Picture"""
 
-    def __init__(self, output_dir: str = "output", game_id: str | None = None):
+    def __init__(self, output_dir: str = "output", game_id: str | None = None, style: str | None = None):
         """
         Initialize the game
 
         Args:
             output_dir: Directory to save game outputs
             game_id: Existing game ID (for continuing a game)
+            style: Art style for image generation
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -56,6 +57,7 @@ class Game:
 
         self.rounds: List[GameRound] = []
         self.game_id = game_id or datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.style = style
 
     @classmethod
     def load(cls, game_file: str) -> "Game":
@@ -74,10 +76,21 @@ class Game:
 
         game = cls(
             output_dir=str(game_path.parent),
-            game_id=data["game_id"]
+            game_id=data["game_id"],
+            style=data.get("style")
         )
         game.rounds = [GameRound.from_dict(r) for r in data["rounds"]]
         return game
+
+    def start(self, sentence: str):
+        """
+        Start a new game with the given sentence
+
+        Args:
+            sentence: The initial sentence to start the game
+        """
+        self.rounds.append(GameRound(1, "text", sentence))
+        self._save_game_history()
 
     def play_round(self) -> bool:
         """
@@ -86,33 +99,29 @@ class Game:
         Returns:
             True if game can continue, False if game is complete
         """
+        if len(self.rounds) == 0:
+            print("❌ Error: Game not started. Call start() first.")
+            return False
+
+        last_round = self.rounds[-1]
         round_num = len(self.rounds) + 1
 
         print(f"🎮 Round {round_num}")
         print("=" * 60)
 
-        if round_num == 1:
-            # First round: Claude generates initial sentence
-            print("Claude generates initial sentence...")
-            sentence = self.claude.generate_initial_sentence()
-            print(f"📝 Sentence: {sentence}")
-            self.rounds.append(GameRound(1, "text", sentence))
-
-        elif round_num % 2 == 0:
-            # Even rounds: text -> image
+        if last_round.content_type == "text":
+            # Text -> Image
             print("Nano Banana draws the sentence...")
-            previous_text = self.rounds[-1].content
             image_path = self.output_dir / f"round_{round_num}_{self.game_id}.png"
 
-            self.banana.generate_image(previous_text, str(image_path))
+            self.banana.generate_image(last_round.content, str(image_path), style=self.style)
             print(f"🎨 Image saved: {image_path}")
             self.rounds.append(GameRound(round_num, "image", str(image_path)))
 
         else:
-            # Odd rounds: image -> text
+            # Image -> Text
             print("Claude describes the image...")
-            previous_image = self.rounds[-1].content
-            description = self.claude.describe_image(previous_image)
+            description = self.claude.describe_image(last_round.content)
             print(f"📝 Description: {description}")
             self.rounds.append(GameRound(round_num, "text", description))
 
@@ -126,6 +135,7 @@ class Game:
         history_file = self.output_dir / f"game_{self.game_id}.json"
         history = {
             "game_id": self.game_id,
+            "style": self.style,
             "rounds": [r.to_dict() for r in self.rounds]
         }
 
@@ -137,6 +147,8 @@ class Game:
     def print_summary(self):
         """Print a summary of the game progression"""
         print("\n📊 Game Summary:")
+        if self.style:
+            print(f"🎨 Style: {self.style}")
         print("-" * 60)
 
         for round_data in self.rounds:

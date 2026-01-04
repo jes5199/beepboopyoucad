@@ -19,13 +19,28 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Example:
-  %(prog)s                           # Start a new game (round 1)
-  %(prog)s --continue output/game_xxx.json  # Continue an existing game
+  %(prog)s "A robot dancing in the rain"
+  %(prog)s "A cat wearing a top hat" --style "watercolor painting"
+  %(prog)s --continue output/game_xxx.json
 
 Environment Variables:
   ANTHROPIC_API_KEY - Required: Your Anthropic API key for Claude
   GOOGLE_API_KEY    - Required: Your Google API key for Gemini
         """
+    )
+
+    parser.add_argument(
+        "sentence",
+        nargs="?",
+        type=str,
+        help="Starting sentence for a new game"
+    )
+
+    parser.add_argument(
+        "--style",
+        type=str,
+        default="pencil drawing on paper",
+        help="Art style for image generation (default: 'pencil drawing on paper')"
     )
 
     parser.add_argument(
@@ -44,6 +59,20 @@ Environment Variables:
     )
 
     args = parser.parse_args()
+
+    # Validate arguments
+    if args.continue_game:
+        if args.sentence:
+            print("❌ Error: Cannot provide a sentence when using --continue")
+            return 1
+        if args.style != "pencil drawing on paper":
+            print("❌ Error: Cannot specify --style when using --continue (style is saved in the game file)")
+            return 1
+
+    if not args.continue_game and not args.sentence:
+        print("❌ Error: Must provide a sentence to start a new game, or --continue to resume")
+        parser.print_help()
+        return 1
 
     # Check for required API keys
     if not os.getenv("ANTHROPIC_API_KEY"):
@@ -65,9 +94,10 @@ Environment Variables:
             game = Game.load(str(game_file))
             print(f"📂 Loaded game: {game.game_id} ({len(game.rounds)} rounds played)")
         else:
-            # Start new game
-            game = Game(output_dir=args.output)
-            print(f"🎮 Starting new game: {game.game_id}")
+            # Start new game with user's sentence
+            game = Game(output_dir=args.output, style=args.style)
+            game.start(args.sentence)
+            print(f"🎮 Started new game: {game.game_id}")
 
         print()
         game.play_round()
