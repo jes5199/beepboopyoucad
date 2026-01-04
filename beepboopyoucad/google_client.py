@@ -37,9 +37,9 @@ class NanoBananaClient:
         """
         # Format prompt with XML tags
         if style:
-            formatted_prompt = f"<style>{style}</style><prompt>{prompt}</prompt>"
+            formatted_prompt = f"<style>{style}</style><prompt>{prompt}</prompt><rule>do not output any text!</rule>"
         else:
-            formatted_prompt = f"<prompt>{prompt}</prompt>"
+            formatted_prompt = f"<prompt>{prompt}</prompt><rule>do not output any text!</rule>"
 
         try:
             response = self.client.models.generate_content(
