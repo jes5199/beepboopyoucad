@@ -3,8 +3,19 @@ Main entry point for Beep Boop You CAD game
 """
 import argparse
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
+
+
+def get_command_prefix() -> str:
+    """Detect if we're running via 'uv run' and return appropriate prefix"""
+    # Check if running inside a uv-managed venv in the current project
+    venv = os.environ.get("VIRTUAL_ENV", "")
+    cwd = os.getcwd()
+    if venv and Path(venv).parent == Path(cwd):
+        return "uv run "
+    return ""
 
 from .game import Game
 
@@ -85,17 +96,19 @@ Environment Variables:
         print("   Image generation will use placeholder images")
 
     try:
+        cmd_prefix = get_command_prefix()
+
         if args.continue_game:
             # Continue existing game
             game_file = Path(args.continue_game)
             if not game_file.exists():
                 print(f"❌ Error: Game file not found: {game_file}")
                 return 1
-            game = Game.load(str(game_file))
+            game = Game.load(str(game_file), cmd_prefix=cmd_prefix)
             print(f"📂 Loaded game: {game.game_id} ({len(game.rounds)} rounds played)")
         else:
             # Start new game with user's sentence
-            game = Game(output_dir=args.output, style=args.style)
+            game = Game(output_dir=args.output, style=args.style, cmd_prefix=cmd_prefix)
             game.start(args.sentence)
             print(f"🎮 Started new game: {game.game_id}")
 

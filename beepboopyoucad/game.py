@@ -40,7 +40,7 @@ class GameRound:
 class Game:
     """Main game controller for Picture Sentence Picture"""
 
-    def __init__(self, output_dir: str = "output", game_id: str | None = None, style: str | None = None):
+    def __init__(self, output_dir: str = "output", game_id: str | None = None, style: str | None = None, cmd_prefix: str = ""):
         """
         Initialize the game
 
@@ -48,6 +48,7 @@ class Game:
             output_dir: Directory to save game outputs
             game_id: Existing game ID (for continuing a game)
             style: Art style for image generation
+            cmd_prefix: Command prefix for continue instructions (e.g., "uv run ")
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -58,14 +59,16 @@ class Game:
         self.rounds: List[GameRound] = []
         self.game_id = game_id or datetime.now().strftime("%Y%m%d_%H%M%S")
         self.style = style
+        self.cmd_prefix = cmd_prefix
 
     @classmethod
-    def load(cls, game_file: str) -> "Game":
+    def load(cls, game_file: str, cmd_prefix: str = "") -> "Game":
         """
         Load a game from a JSON file
 
         Args:
             game_file: Path to the game JSON file
+            cmd_prefix: Command prefix for continue instructions
 
         Returns:
             Game instance with loaded state
@@ -77,7 +80,8 @@ class Game:
         game = cls(
             output_dir=str(game_path.parent),
             game_id=data["game_id"],
-            style=data.get("style")
+            style=data.get("style"),
+            cmd_prefix=cmd_prefix
         )
         game.rounds = [GameRound.from_dict(r) for r in data["rounds"]]
         return game
@@ -143,7 +147,7 @@ class Game:
             json.dump(history, f, indent=2)
 
         print(f"💾 Game saved: {history_file}")
-        print(f"▶️  Continue: beepboopyoucad --continue {history_file}")
+        print(f"▶️  Continue: {self.cmd_prefix}beepboopyoucad --continue {history_file}")
 
     def print_summary(self):
         """Print a summary of the game progression"""
