@@ -57,7 +57,7 @@ Environment Variables:
     parser.add_argument(
         "--describe",
         type=str,
-        default="Describe what you see in this image in a single sentence. Be concrete and specific. Just output the sentence, nothing else.",
+        default="Caption this. Keep it terse, like a New Yorker cartoon, but more creative",
         help="Prompt for Claude when describing images"
     )
 
@@ -78,7 +78,7 @@ Environment Variables:
 
     args = parser.parse_args()
 
-    default_describe = "Describe what you see in this image in a single sentence. Be concrete and specific. Just output the sentence, nothing else."
+    default_describe = "Caption this. Keep it terse, like a New Yorker cartoon, but more creative"
 
     # Validate arguments
     if args.continue_game:

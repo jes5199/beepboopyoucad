@@ -52,7 +52,7 @@ class ClaudeClient:
         from pathlib import Path
 
         if prompt is None:
-            prompt = "Describe what you see in this image in a single sentence. Be concrete and specific. Just output the sentence, nothing else."
+            prompt = "Caption this. Keep it terse, like a New Yorker cartoon, but more creative"
 
         # Read and encode the image
         image_data = Path(image_path).read_bytes()
