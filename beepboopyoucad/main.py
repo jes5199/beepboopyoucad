@@ -127,6 +127,7 @@ Environment Variables:
         print()
         game.play_round()
         game.print_summary()
+        game.print_continue_command()
         return 0
 
     except KeyboardInterrupt:

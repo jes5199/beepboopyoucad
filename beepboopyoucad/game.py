@@ -151,7 +151,6 @@ class Game:
             json.dump(history, f, indent=2)
 
         print(f"💾 Game saved: {history_file}")
-        print(f"▶️  Continue: {self.cmd_prefix}beepboopyoucad --continue {history_file}")
 
     def print_summary(self):
         """Print a summary of the game progression"""
@@ -174,3 +173,8 @@ class Game:
             print("\n🔄 Transformation:")
             print(f"  Started with: {self.rounds[0].content}")
             print(f"  Ended with:   {self.rounds[-1].content}")
+
+    def print_continue_command(self):
+        """Print the command to continue this game"""
+        history_file = self.output_dir / f"game_{self.game_id}.json"
+        print(f"\n▶️  Continue: {self.cmd_prefix}beepboopyoucad --continue {history_file}")
