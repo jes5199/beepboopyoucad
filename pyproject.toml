@@ -1,0 +1,19 @@
+[project]
+name = "beepboopyoucad"
+version = "0.1.0"
+description = "Picture sentence picture game with Claude and Nano Banana"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.40.0",
+    "pillow>=10.0.0",
+    "python-dotenv>=1.0.0",
+    "requests>=2.31.0",
+]
+
+[project.scripts]
+beepboopyoucad = "beepboopyoucad.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
