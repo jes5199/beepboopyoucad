@@ -12,13 +12,13 @@ from .banana_client import NanoBananaClient
 
 class GameRound:
     """Represents a single round in the game"""
-    
-    def __init__(self, round_num: int, content_type: str, content: str):
+
+    def __init__(self, round_num: int, content_type: str, content: str, timestamp: str | None = None):
         self.round_num = round_num
         self.content_type = content_type  # "text" or "image"
         self.content = content  # sentence or image path
-        self.timestamp = datetime.now().isoformat()
-    
+        self.timestamp = timestamp or datetime.now().isoformat()
+
     def to_dict(self) -> Dict:
         return {
             "round": self.round_num,
@@ -27,69 +27,100 @@ class GameRound:
             "timestamp": self.timestamp
         }
 
+    @classmethod
+    def from_dict(cls, data: Dict) -> "GameRound":
+        return cls(
+            round_num=data["round"],
+            content_type=data["type"],
+            content=data["content"],
+            timestamp=data.get("timestamp")
+        )
+
 
 class Game:
     """Main game controller for Picture Sentence Picture"""
-    
-    def __init__(self, output_dir: str = "output"):
+
+    def __init__(self, output_dir: str = "output", game_id: str | None = None):
         """
         Initialize the game
-        
+
         Args:
             output_dir: Directory to save game outputs
+            game_id: Existing game ID (for continuing a game)
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         self.claude = ClaudeClient()
         self.banana = NanoBananaClient()
-        
+
         self.rounds: List[GameRound] = []
-        self.game_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-    
-    def play(self, num_rounds: int = 5):
+        self.game_id = game_id or datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    @classmethod
+    def load(cls, game_file: str) -> "Game":
         """
-        Play the game for a specified number of rounds
-        
+        Load a game from a JSON file
+
         Args:
-            num_rounds: Number of rounds to play (must be odd to end on text)
+            game_file: Path to the game JSON file
+
+        Returns:
+            Game instance with loaded state
         """
-        print("🎮 Starting 'Beep Boop You CAD' game!")
+        game_path = Path(game_file)
+        with open(game_path) as f:
+            data = json.load(f)
+
+        game = cls(
+            output_dir=str(game_path.parent),
+            game_id=data["game_id"]
+        )
+        game.rounds = [GameRound.from_dict(r) for r in data["rounds"]]
+        return game
+
+    def play_round(self) -> bool:
+        """
+        Play a single round of the game
+
+        Returns:
+            True if game can continue, False if game is complete
+        """
+        round_num = len(self.rounds) + 1
+
+        print(f"🎮 Round {round_num}")
         print("=" * 60)
-        
-        # Round 1: Claude generates initial sentence
-        print("\n[Round 1] Claude generates initial sentence...")
-        sentence = self.claude.generate_initial_sentence()
-        print(f"📝 Sentence: {sentence}")
-        self.rounds.append(GameRound(1, "text", sentence))
-        
-        # Alternate between image and text
-        for round_num in range(2, num_rounds + 1):
-            print(f"\n[Round {round_num}] ", end="")
-            
-            if round_num % 2 == 0:  # Even rounds: text -> image
-                print("Nano Banana draws the sentence...")
-                previous_text = self.rounds[-1].content
-                image_path = self.output_dir / f"round_{round_num}_{self.game_id}.png"
-                
-                self.banana.generate_image(previous_text, str(image_path))
-                print(f"🎨 Image saved: {image_path}")
-                self.rounds.append(GameRound(round_num, "image", str(image_path)))
-                
-            else:  # Odd rounds: image -> text
-                print("Claude describes the image...")
-                previous_image = self.rounds[-1].content
-                description = self.claude.describe_image(previous_image)
-                print(f"📝 Description: {description}")
-                self.rounds.append(GameRound(round_num, "text", description))
-        
-        # Save game history
+
+        if round_num == 1:
+            # First round: Claude generates initial sentence
+            print("Claude generates initial sentence...")
+            sentence = self.claude.generate_initial_sentence()
+            print(f"📝 Sentence: {sentence}")
+            self.rounds.append(GameRound(1, "text", sentence))
+
+        elif round_num % 2 == 0:
+            # Even rounds: text -> image
+            print("Nano Banana draws the sentence...")
+            previous_text = self.rounds[-1].content
+            image_path = self.output_dir / f"round_{round_num}_{self.game_id}.png"
+
+            self.banana.generate_image(previous_text, str(image_path))
+            print(f"🎨 Image saved: {image_path}")
+            self.rounds.append(GameRound(round_num, "image", str(image_path)))
+
+        else:
+            # Odd rounds: image -> text
+            print("Claude describes the image...")
+            previous_image = self.rounds[-1].content
+            description = self.claude.describe_image(previous_image)
+            print(f"📝 Description: {description}")
+            self.rounds.append(GameRound(round_num, "text", description))
+
+        # Save after each round
         self._save_game_history()
-        
-        print("\n" + "=" * 60)
-        print("🎉 Game complete!")
-        self._print_summary()
-    
+
+        return True
+
     def _save_game_history(self):
         """Save the game history to a JSON file"""
         history_file = self.output_dir / f"game_{self.game_id}.json"
@@ -97,17 +128,17 @@ class Game:
             "game_id": self.game_id,
             "rounds": [r.to_dict() for r in self.rounds]
         }
-        
+
         with open(history_file, "w") as f:
             json.dump(history, f, indent=2)
-        
-        print(f"\n💾 Game history saved: {history_file}")
-    
-    def _print_summary(self):
+
+        print(f"💾 Game saved: {history_file}")
+
+    def print_summary(self):
         """Print a summary of the game progression"""
         print("\n📊 Game Summary:")
         print("-" * 60)
-        
+
         for round_data in self.rounds:
             if round_data.content_type == "text":
                 print(f"\nRound {round_data.round_num} (Text):")
@@ -115,9 +146,9 @@ class Game:
             else:
                 print(f"\nRound {round_data.round_num} (Image):")
                 print(f"  {round_data.content}")
-        
+
         print("\n" + "-" * 60)
-        
+
         if len(self.rounds) >= 2:
             print("\n🔄 Transformation:")
             print(f"  Started with: {self.rounds[0].content}")
