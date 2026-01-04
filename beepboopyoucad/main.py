@@ -126,6 +126,7 @@ Environment Variables:
 
         print()
         game.play_round()
+        game.save_html()
         game.print_summary()
         game.print_continue_command()
         return 0

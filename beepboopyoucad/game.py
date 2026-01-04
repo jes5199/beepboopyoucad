@@ -178,3 +178,64 @@ class Game:
         """Print the command to continue this game"""
         history_file = self.output_dir / f"game_{self.game_id}.json"
         print(f"\n▶️  Continue: {self.cmd_prefix}beepboopyoucad --continue {history_file}")
+
+    def save_html(self):
+        """Save an HTML file showing the game conversation"""
+        import base64
+
+        html_file = self.output_dir / f"game_{self.game_id}.html"
+
+        html_parts = [
+            "<!DOCTYPE html>",
+            "<html>",
+            "<head>",
+            f"<title>Beep Boop You CAD - Game {self.game_id}</title>",
+            "<style>",
+            "body { font-family: Georgia, serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #f5f5f5; }",
+            "h1 { text-align: center; color: #333; }",
+            ".round { background: white; margin: 20px 0; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }",
+            ".round-num { color: #666; font-size: 0.9em; margin-bottom: 10px; }",
+            ".text { font-size: 1.4em; font-style: italic; color: #333; }",
+            ".image { text-align: center; }",
+            ".image img { max-width: 100%; border-radius: 4px; }",
+            ".meta { color: #999; font-size: 0.8em; margin-top: 20px; text-align: center; }",
+            "</style>",
+            "</head>",
+            "<body>",
+            f"<h1>Beep Boop You CAD</h1>",
+        ]
+
+        if self.style:
+            html_parts.append(f"<p style='text-align:center;color:#666;'>Style: {self.style}</p>")
+
+        for round_data in self.rounds:
+            html_parts.append("<div class='round'>")
+            html_parts.append(f"<div class='round-num'>Round {round_data.round_num}</div>")
+
+            if round_data.content_type == "text":
+                html_parts.append(f"<div class='text'>\"{round_data.content}\"</div>")
+            else:
+                # Embed image as base64
+                try:
+                    image_path = Path(round_data.content)
+                    if image_path.exists():
+                        image_data = image_path.read_bytes()
+                        b64 = base64.b64encode(image_data).decode('utf-8')
+                        ext = image_path.suffix.lower()
+                        mime = "image/png" if ext == ".png" else "image/jpeg"
+                        html_parts.append(f"<div class='image'><img src='data:{mime};base64,{b64}'></div>")
+                    else:
+                        html_parts.append(f"<div class='image'>[Image: {round_data.content}]</div>")
+                except Exception:
+                    html_parts.append(f"<div class='image'>[Image: {round_data.content}]</div>")
+
+            html_parts.append("</div>")
+
+        html_parts.extend([
+            f"<div class='meta'>Game ID: {self.game_id}</div>",
+            "</body>",
+            "</html>"
+        ])
+
+        html_file.write_text("\n".join(html_parts))
+        print(f"🌐 HTML saved: {html_file}")
