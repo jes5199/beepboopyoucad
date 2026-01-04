@@ -75,6 +75,10 @@ class NanoBananaClient:
                     img_data = base64.b64decode(image_data[0]["image_base64"])
                     Path(output_path).write_bytes(img_data)
                     return output_path
+            
+            # If we got a response but couldn't parse it, fall back to placeholder
+            print(f"Warning: Unexpected API response structure, creating placeholder image")
+            return self._create_placeholder_image(prompt, output_path)
                     
         except Exception as e:
             # Fallback: Create a placeholder image with PIL
@@ -92,7 +96,7 @@ class NanoBananaClient:
         Returns:
             Path to the saved image
         """
-        from PIL import Image, ImageDraw, ImageFont
+        from PIL import Image, ImageDraw
         
         # Create a simple image with the prompt text
         img = Image.new('RGB', (512, 512), color=(240, 240, 240))

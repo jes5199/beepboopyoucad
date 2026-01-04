@@ -1,14 +1,13 @@
 """
 Demo script that shows the game flow without requiring API keys
 """
-import os
 import sys
 from pathlib import Path
 
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add current directory to path so we can import beepboopyoucad
+sys.path.insert(0, str(Path(__file__).parent))
 
-from beepboopyoucad.game import Game, GameRound
+from beepboopyoucad.game import GameRound
 
 
 def demo_game():
