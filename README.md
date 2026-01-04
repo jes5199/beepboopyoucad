@@ -74,6 +74,16 @@ Specify a custom output directory:
 uv run beepboopyoucad --rounds 5 --output my_game_results
 ```
 
+### Try the Demo
+
+To see how the game works without API keys, run the demo:
+
+```bash
+uv run python demo.py
+```
+
+This will create a simulated game showing the flow from text to image and back.
+
 ## Output
 
 The game creates:
