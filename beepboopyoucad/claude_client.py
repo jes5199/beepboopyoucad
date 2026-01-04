@@ -52,7 +52,7 @@ class ClaudeClient:
         from pathlib import Path
 
         if prompt is None:
-            prompt = "Caption this. Keep it terse, like a New Yorker cartoon, but more creative"
+            prompt = "Caption this. Keep it terse, like a New Yorker cartoon, but more creative. Avoid cliches."
 
         # Read and encode the image
         image_data = Path(image_path).read_bytes()
