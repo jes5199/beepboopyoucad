@@ -90,4 +90,8 @@ class ClaudeClient:
                 ],
             }]
         )
-        return response.content[0].text.strip()
+        text = response.content[0].text.strip()
+        # Remove surrounding quotes if the entire response is quoted
+        if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
+            text = text[1:-1]
+        return text
