@@ -143,6 +143,7 @@ class Game:
             json.dump(history, f, indent=2)
 
         print(f"💾 Game saved: {history_file}")
+        print(f"▶️  Continue: beepboopyoucad --continue {history_file}")
 
     def print_summary(self):
         """Print a summary of the game progression"""
