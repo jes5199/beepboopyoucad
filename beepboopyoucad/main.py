@@ -50,8 +50,8 @@ Environment Variables:
     parser.add_argument(
         "--style",
         type=str,
-        default="pencil drawing on paper",
-        help="Art style for image generation (default: 'pencil drawing on paper')"
+        default="a very hasty and sloppy pencil sketch",
+        help="Art style for image generation (default: 'a very hasty and sloppy pencil sketch')"
     )
 
     parser.add_argument(
@@ -85,7 +85,7 @@ Environment Variables:
         if args.sentence:
             print("❌ Error: Cannot provide a sentence when using --continue")
             return 1
-        if args.style != "pencil drawing on paper":
+        if args.style != "a very hasty and sloppy pencil sketch":
             print("❌ Error: Cannot specify --style when using --continue (style is saved in the game file)")
             return 1
         if args.describe != default_describe:
