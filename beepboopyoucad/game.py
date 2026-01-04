@@ -40,7 +40,7 @@ class GameRound:
 class Game:
     """Main game controller for Picture Sentence Picture"""
 
-    def __init__(self, output_dir: str = "output", game_id: str | None = None, style: str | None = None, cmd_prefix: str = ""):
+    def __init__(self, output_dir: str = "output", game_id: str | None = None, style: str | None = None, describe: str | None = None, cmd_prefix: str = ""):
         """
         Initialize the game
 
@@ -48,6 +48,7 @@ class Game:
             output_dir: Directory to save game outputs
             game_id: Existing game ID (for continuing a game)
             style: Art style for image generation
+            describe: Prompt for Claude when describing images
             cmd_prefix: Command prefix for continue instructions (e.g., "uv run ")
         """
         self.output_dir = Path(output_dir)
@@ -59,6 +60,7 @@ class Game:
         self.rounds: List[GameRound] = []
         self.game_id = game_id or datetime.now().strftime("%Y%m%d_%H%M%S")
         self.style = style
+        self.describe = describe
         self.cmd_prefix = cmd_prefix
 
     @classmethod
@@ -81,6 +83,7 @@ class Game:
             output_dir=str(game_path.parent),
             game_id=data["game_id"],
             style=data.get("style"),
+            describe=data.get("describe"),
             cmd_prefix=cmd_prefix
         )
         game.rounds = [GameRound.from_dict(r) for r in data["rounds"]]
@@ -125,7 +128,7 @@ class Game:
         else:
             # Image -> Text
             print("Claude describes the image...")
-            description = self.claude.describe_image(last_round.content)
+            description = self.claude.describe_image(last_round.content, prompt=self.describe)
             print(f"📝 Description: {description}")
             self.rounds.append(GameRound(round_num, "text", description))
 
@@ -140,6 +143,7 @@ class Game:
         history = {
             "game_id": self.game_id,
             "style": self.style,
+            "describe": self.describe,
             "rounds": [r.to_dict() for r in self.rounds]
         }
 

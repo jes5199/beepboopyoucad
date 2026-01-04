@@ -55,6 +55,13 @@ Environment Variables:
     )
 
     parser.add_argument(
+        "--describe",
+        type=str,
+        default="Describe what you see in this image in a single sentence. Be concrete and specific. Just output the sentence, nothing else.",
+        help="Prompt for Claude when describing images"
+    )
+
+    parser.add_argument(
         "--continue",
         dest="continue_game",
         type=str,
@@ -71,6 +78,8 @@ Environment Variables:
 
     args = parser.parse_args()
 
+    default_describe = "Describe what you see in this image in a single sentence. Be concrete and specific. Just output the sentence, nothing else."
+
     # Validate arguments
     if args.continue_game:
         if args.sentence:
@@ -78,6 +87,9 @@ Environment Variables:
             return 1
         if args.style != "pencil drawing on paper":
             print("❌ Error: Cannot specify --style when using --continue (style is saved in the game file)")
+            return 1
+        if args.describe != default_describe:
+            print("❌ Error: Cannot specify --describe when using --continue (describe is saved in the game file)")
             return 1
 
     if not args.continue_game and not args.sentence:
@@ -108,7 +120,7 @@ Environment Variables:
             print(f"📂 Loaded game: {game.game_id} ({len(game.rounds)} rounds played)")
         else:
             # Start new game with user's sentence
-            game = Game(output_dir=args.output, style=args.style, cmd_prefix=cmd_prefix)
+            game = Game(output_dir=args.output, style=args.style, describe=args.describe, cmd_prefix=cmd_prefix)
             game.start(args.sentence)
             print(f"🎮 Started new game: {game.game_id}")
 

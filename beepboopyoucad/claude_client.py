@@ -37,23 +37,27 @@ class ClaudeClient:
         )
         return response.content[0].text.strip()
     
-    def describe_image(self, image_path: str) -> str:
+    def describe_image(self, image_path: str, prompt: str | None = None) -> str:
         """
         Describe what Claude sees in an image
-        
+
         Args:
             image_path: Path to the image file
-            
+            prompt: Custom prompt for describing the image
+
         Returns:
             A sentence describing what Claude sees in the image
         """
         import base64
         from pathlib import Path
-        
+
+        if prompt is None:
+            prompt = "Describe what you see in this image in a single sentence. Be concrete and specific. Just output the sentence, nothing else."
+
         # Read and encode the image
         image_data = Path(image_path).read_bytes()
         base64_image = base64.b64encode(image_data).decode("utf-8")
-        
+
         # Determine media type
         extension = Path(image_path).suffix.lower()
         media_type_map = {
@@ -64,7 +68,7 @@ class ClaudeClient:
             ".webp": "image/webp"
         }
         media_type = media_type_map.get(extension, "image/jpeg")
-        
+
         response = self.client.messages.create(
             model="claude-opus-4-5-20251101",
             max_tokens=150,
@@ -81,7 +85,7 @@ class ClaudeClient:
                     },
                     {
                         "type": "text",
-                        "text": "Describe what you see in this image in a single sentence. Be concrete and specific. Just output the sentence, nothing else."
+                        "text": prompt
                     }
                 ],
             }]
